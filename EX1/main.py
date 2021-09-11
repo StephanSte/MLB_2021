@@ -52,9 +52,9 @@ class KNN:
 if __name__ == "__main__":
     # Imports
     from matplotlib.colors import ListedColormap
-    from sklearn import datasets
-    from sklearn.model_selection import train_test_split
-    from sklearn.neighbors import KNeighborsClassifier
+    #from sklearn import datasets
+    #from sklearn.model_selection import train_test_split
+    #from sklearn.neighbors import KNeighborsClassifier
 
 
     def accuracy(y_true, y_pred):
