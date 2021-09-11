@@ -186,31 +186,13 @@ if __name__ == "__main__":
         res = list()
         for i in range(1, 10, 2):
             res.append(classification(i))
-
-        max_value = max(res[0])
-        max_index = res[0].index(max_value)
-        print("Best index: ", max_index)
-
-        max_value = max(res[1])
-        max_index = res[1].index(max_value)
-        print("Best index SK: ", max_index)
-
-
-    #hypertrain()
+        print("=================================================")
+    hypertrain()
 
 
     def hypertrain2():
         res = list()
         for i in range(1, 10, 2):
             res.append(regression(i))
-
-        max_value = min(res[0])
-        max_index = res[0].index(max_value)
-        print("Lowest mean: ", max_index)
-
-        max_value = min(res[1])
-        max_index = res[1].index(max_value)
-        print("Lowest mean sklearn: ", max_index)
-
 
     hypertrain2()
