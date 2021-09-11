@@ -45,7 +45,7 @@ import seaborn as sns
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
-from MAI_AusgleichskursML_kNN_UTILS_202108_sl import *
+from EX1.MAI_AusgleichskursML_kNN_UTILS_202108_sl import *
 
 
 # ----------------------------------------------------------------------------------------------------------------------
