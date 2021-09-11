@@ -1,14 +1,29 @@
 import math
+import numpy
 from collections import Counter
 
 import numpy as np
 import pandas as pd
+import sklearn.neighbors
+from sklearn import preprocessing
 
 
 def euclidean_distance(x1, x2):
     # print(x1)
     # print(x2)
     return np.sqrt(np.sum((x1 - x2) ** 2))
+
+
+def min_max_norm(data):
+    # iterate over each column (but class)
+    for col in range(0, data.shape[1] - 1):
+        min_val = data.iloc[:, col].min()  # min val of current col
+        max_val = data.iloc[:, col].max()  # max val
+        # iterate over rows
+        for row in range(0, data.shape[0]):
+            # normalize as per min max norm
+            data.iat[row, col] = (data.iat[row, col] - min_val) / (max_val - min_val)
+    return data
 
 
 class KNN:
@@ -38,11 +53,10 @@ class KNN:
             most_common = Counter(k_neighbor_labels).most_common(1)
             return most_common[0][0]
         elif self.type == 'regressor':
-            print("lalala")
+            # sum += k_neighbor_labels[i] for i in range(self.k)
             sum = 0
             for i in range(self.k):
-                print(distances[i][1])
-                sum += distances[i][1]
+                sum += k_neighbor_labels[i]
             # return mean
             return sum / self.k
         else:
@@ -50,25 +64,18 @@ class KNN:
 
 
 if __name__ == "__main__":
-    # Imports
-    from matplotlib.colors import ListedColormap
-    #from sklearn import datasets
-    #from sklearn.model_selection import train_test_split
-    #from sklearn.neighbors import KNeighborsClassifier
-
-
     def accuracy(y_true, y_pred):
         accuracy = np.sum(y_true.values == y_pred) / len(y_true)
         return accuracy
 
 
-    def getFolds(givenData, _folds, _i):
+    def getFolds(data, _folds, _i):
         setsize = math.floor(data.shape[0] / _folds)
         start = _i * setsize
         end = start + setsize
 
-        train = givenData.drop(range(start, end))
-        test = givenData.iloc[start:end]
+        train = data.drop(range(start, end))
+        test = data.iloc[start:end]
 
         X_train = train.iloc[:, :-1]
         y_train = train.iloc[:, -1]
@@ -79,36 +86,131 @@ if __name__ == "__main__":
         return [X_train, y_train, X_test, y_test]
 
 
-    # iris = datasets.load_iris()
-    # X, y = iris.data, iris.target
+    def classification(k):
+        data = pd.read_csv("EX1/iris.data")
 
-    # X_train, X_test, y_train, y_test = train_test_split(
-    #    X, y, test_size=0.2, random_state=7777
-    # )
+        data = min_max_norm(data)
 
-    # data_headers = ['sepal length', 'sepal width', 'petal length', 'petal width', 'class']
-    # data = pd.read_csv("EX1/iris.data", names=data_headers)
-    # data = pd.read_csv("EX1/iris.data")
-    data = pd.read_csv(r"EX1/iris.data")
+        folds = 5
+        k = k
 
-    folds = 5
-    k = 7
-    results = list()
-    # do it with 1,3,5,7,9 or smth k values
-    for i in range(0, folds):
-        folders = getFolds(data, folds, i)
-        X_train = folders[0]
-        y_train = folders[1]
-        X_test = folders[2]
-        y_test = folders[3]
+        results = list()
+        resultsSk = list()
+        # do it with 1,3,5,7,9 or smth k values
+        for i in range(0, folds):
+            folders = getFolds(data, folds, i)
+            X_train = folders[0]
+            y_train = folders[1]
+            X_test = folders[2]
+            y_test = folders[3]
 
-        clf = KNN(k=k)
-        # classifier_sklearn = KNeighborsClassifier(k)
-        # classifier_sklearn.fit(X_train, y_train)
+            clf = KNN(k=k)
+            clfSK = sklearn.neighbors.KNeighborsClassifier(k)
 
-        regressor = 'regressor'
-        classifier = 'classifier'
-        clf.fit(X_train, y_train, classifier)
-        classifierKnn = clf.predict(X_test)
-        results.append(accuracy(y_test, classifierKnn))
-    print(results)
+            clf.fit(X_train, y_train, 'classifier')
+            clfSK.fit(X_train, y_train)
+
+            classifierKnn = clf.predict(X_test)
+            classifierSklearn = clfSK.predict(X_test)
+
+            results.append(accuracy(y_test, classifierKnn))
+            resultsSk.append(accuracy(y_test, classifierSklearn))
+
+        avg = 0
+        for i in range(len(results)):
+            avg += results[i]
+        avg = avg / len(results)
+
+        avg2 = 0
+        for i in range(len(resultsSk)):
+            avg2 += resultsSk[i]
+        avg2 = avg2 / len(resultsSk)
+
+        print("Avg:    ", avg)
+        print("Avg SK: ", avg2)
+
+        # print(resultsSk)
+        return [avg, avg2]
+
+
+    # classification(5)
+
+    def regression(k):
+        data = pd.read_csv("EX1/housing.csv")
+        folds = 5
+        k = k
+        mean = list()
+        meanSK = list()
+        results = list()
+        resultsSk = list()
+        for i in range(0, folds):
+            folders = getFolds(data, folds, i)
+            X_train = folders[0]
+            y_train = folders[1]
+            X_test = folders[2]
+            y_test = folders[3]
+
+            clf = KNN(k=k)
+            clfSK = sklearn.neighbors.KNeighborsRegressor(k)
+
+            clf.fit(X_train, y_train, 'regressor')
+            clfSK.fit(X_train, y_train)
+
+            classifierKnn = clf.predict(X_test)
+            classifierSklearn = clfSK.predict(X_test)
+
+            results.append(classifierKnn)
+            resultsSk.append(classifierSklearn)
+
+            mean.append(sklearn.metrics.mean_squared_error(y_test, results[i]))
+            meanSK.append(sklearn.metrics.mean_squared_error(y_test, resultsSk[i]))
+
+        avg = 0
+        for i in range(len(mean)):
+            avg += mean[i]
+        avg = avg / len(mean)
+
+        avg2 = 0
+        for i in range(len(meanSK)):
+            avg2 += meanSK[i]
+        avg2 = avg2 / len(meanSK)
+
+        print("Avg:    ", avg)
+        print("Avg sk: ", avg2)
+        return [avg, avg2]
+
+
+    # regression()
+
+    def hypertrain():
+        res = list()
+        for i in range(1, 10, 2):
+            res.append(classification(i))
+
+        max_value = max(res[0])
+        max_index = res[0].index(max_value)
+        print("Best index: ", max_index)
+
+        max_value = max(res[1])
+        max_index = res[1].index(max_value)
+        print("Best index SK: ", max_index)
+
+
+    #hypertrain()
+
+
+    def hypertrain2():
+        res = list()
+        for i in range(1, 10, 2):
+            res.append(regression(i))
+
+        max_value = min(res[0])
+        max_index = res[0].index(max_value)
+        print("Lowest mean: ", max_index)
+
+        max_value = min(res[1])
+        max_index = res[1].index(max_value)
+        print("Lowest mean sklearn: ", max_index)
+
+
+    hypertrain2()
