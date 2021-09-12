@@ -1,0 +1,10 @@
+How does the KNN algorithm make the predictions on the unseen dataset?
+- it sorts the distances in ascending order
+- it stores the K neatest points from the training dataset
+- it calculates the test point to all points in the training set and stores them
+- it assigns the class with the highest proportions
++ all of the above
+
+What does the K in KNN Algorithm stand for?
++ it represents the number of nearest neighbours that are used to predict the label.
+- it represents the number of hyperparameters that are supposed to be tuned.
