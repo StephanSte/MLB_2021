@@ -2,6 +2,8 @@ import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.datasets import make_regression
 from sklearn.linear_model import LinearRegression
+from sklearn.feature_selection import f_regression
+
 
 X, y = make_regression(n_samples=100, n_features=1, noise=21)
 plt.scatter(X, y)
@@ -37,3 +39,7 @@ r_2 = 1 - (rss / tss)
 
 print('MSE:', mse)
 print('R2:', r_2)
+
+X, y = make_regression(n_samples=100, n_features=1, noise=21)
+f_value, p_value = f_regression(X, y)
+print('P-Value: ', p_value)
