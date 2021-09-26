@@ -14,6 +14,7 @@ def forward_selection(data, target, significance_level=0.05):
         remaining_features = list(set(initial_features) - set(best_features))
         new_pval = pandas.Series(index=remaining_features)
         for new_column in remaining_features:
+            #ordinary least sqaures = ols
             model = sm.OLS(target, sm.add_constant(data[best_features + [new_column]])).fit()
             new_pval[new_column] = model.pvalues[new_column]
         min_p_value = new_pval.min()
