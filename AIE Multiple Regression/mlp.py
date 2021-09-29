@@ -2,21 +2,23 @@ import pandas
 from sklearn import linear_model
 import numpy as np
 from matplotlib import pyplot as plt
-import statsmodels.api as sm
 from sklearn.feature_selection import f_regression
-from sklearn.datasets import load_boston
+from sklearn.datasets import make_regression
 
 
-def forward_selection(data, target, significance_level=0.05):
+def forward_selection(data, significance_level=0.05):
     initial_features = data.columns.tolist()
     best_features = []
     while len(initial_features) > 0:
         remaining_features = list(set(initial_features) - set(best_features))
         new_pval = pandas.Series(index=remaining_features)
         for new_column in remaining_features:
-            #ordinary least sqaures = ols
-            model = sm.OLS(target, sm.add_constant(data[best_features + [new_column]])).fit()
-            new_pval[new_column] = model.pvalues[new_column]
+            # ordinary least sqaures = ols
+            #model = sm.OLS(y, sm.add_constant(X[best_features + [new_column]])).fit()
+            model = f_regression(data.iloc[:, :-1], data.iloc[:, -1])
+            pvals = model[1]
+            if new_column < 100:
+                new_pval[new_column] = pvals[new_column]
         min_p_value = new_pval.min()
         if min_p_value < significance_level:
             best_features.append(new_pval.idxmin())
@@ -25,34 +27,24 @@ def forward_selection(data, target, significance_level=0.05):
     return best_features
 
 
-def backward_elimination(data, target, significance_level=0.05):
-    features = data.columns.tolist()
-    while len(features) > 0:
-        features_with_constant = sm.add_constant(data[features])
-        p_values = sm.OLS(target, features_with_constant).fit().pvalues[1:]
-        max_p_value = p_values.max()
-        if max_p_value >= significance_level:
-            excluded_feature = p_values.idxmax()
-            features.remove(excluded_feature)
-        else:
+def backward_elimination(data, significance_level=0.05):
+    while 2:
+        p_vals = f_regression(data.iloc[:, :-1], data.iloc[:, -1])[1]
+        if (p_vals <= significance_level).all() or data.shape[1] == 2:
             break
-    return features
+        bad_index = p_vals.argmax(axis=0)
+        data = data.drop(data.columns[bad_index], axis=1)
+    return data
 
 
-boston = load_boston()
-bos = pandas.DataFrame(boston.data, columns=boston.feature_names)
-bos['Price'] = boston.target
-X = bos.drop("Price", 1)  # feature matrix
-y = bos['Price']  # target feature
-bos.head()
+n_features = 100
+X, y = make_regression(n_samples=100, n_features=n_features, noise=25)
+data = pandas.DataFrame(data=np.c_[X, y])
 
-#df = pandas.read_csv("cars.csv")
-
-#X = df[['Weight', 'Volume']]
-#y = df['CO2']
-
-test = forward_selection(X, y)
+test = forward_selection(data)
 print(test)
+
+# exit(0)
 # plt.scatter(X, y)
 # plt.show()
 
@@ -89,10 +81,5 @@ r_2 = 1 - (rss / tss)
 print('MSE:', mse)
 print('R2:', r_2)
 
-boston = load_boston()
-bos = pandas.DataFrame(boston.data, columns=boston.feature_names)
-bos['Price'] = boston.target
-X = bos.drop("Price", 1)  # feature matrix
-y = bos['Price']  # target feature
 f_value, p_value = f_regression(X, y)
 print('P-Value: ', p_value)
