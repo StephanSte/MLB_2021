@@ -64,7 +64,8 @@ def main():
 
     # Model training
     model = RidgeRegression(iterations=1000,
-                            learning_rate=0.01, l2_penality=1)
+                            learning_rate=0.01,
+                            l2_penality=1)
     model.fit(X_train, Y_train)
 
     # Prediction on test set
