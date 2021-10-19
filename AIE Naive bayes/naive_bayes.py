@@ -79,6 +79,6 @@ class MailClass:
 
 pred = MailClass(spam_mails, valid_mails)
 
-test_mail = "Brother Arthur I"
+test_mail = "money is so cool i like it"
 
 print(pred.predict(test_mail))
