@@ -1,5 +1,5 @@
 valid_mails = [
-    "Dear Arthur I have news for you, my neace has recently married a thief in Valentine",
+    "Dear Arthur I have news for you, my niece has recently married a thief in Valentine",
     "Oh Arthur I fear for her life please look after her",
     "I wish I would have run away with you when I had the chance but you know daddy no one can look after him but me",
     "I I I the egg is the Ei",
@@ -33,17 +33,28 @@ class MailClass:
             for word in mail.split():
                 self.spam_count += 1
                 if word not in self.wordCounts_spam:
-                    self.wordCounts_spam[word] = 1
+                    self.wordCounts_spam[word] = 0
                 self.wordCounts_spam[word] += 1
 
         self.wordCounts_valid = {}
         for mail in valid:
             for word in mail.split():
                 self.valid_count += 1
-
                 if word not in self.wordCounts_valid:
-                    self.wordCounts_valid[word] = 1
+                    self.wordCounts_valid[word] = 0
                 self.wordCounts_valid[word] += 1
+
+        for mail in spam:
+            for word in mail.split():
+                if word not in self.wordCounts_valid:
+                    self.valid_count += 1
+                    self.wordCounts_valid[word] = 1
+
+        for mail in valid:
+            for word in mail.split():
+                if word not in self.wordCounts_spam:
+                    self.spam_count += 1
+                    self.wordCounts_spam[word] = 1
 
         self.wordProbabilities_spam = {}
         for word in self.wordCounts_spam:
@@ -56,17 +67,11 @@ class MailClass:
     def predict(self, mail):
         for word in mail.split():
             if word not in self.wordProbabilities_valid:
-                self.valid_count += 1
-                temp_prob_valid = 1 / self.valid_count
-                self.valid_prop *= temp_prob_valid
                 continue
             self.valid_prop *= self.wordProbabilities_valid[word]
 
         for word in mail.split():
             if word not in self.wordProbabilities_spam:
-                self.spam_count += 1
-                temp_prob_spam = 1 / self.spam_count
-                self.spam_prop *= temp_prob_spam
                 continue
             self.spam_prop *= self.wordProbabilities_spam[word]
 
@@ -79,6 +84,9 @@ class MailClass:
 
 pred = MailClass(spam_mails, valid_mails)
 
-test_mail = "money is so cool i like it"
+test_mail_spam = "money is so cool i like it mucho dinero comprende"
+test_mail_valid = "Dear Brother Arthur I love the cheese"
 
-print(pred.predict(test_mail))
+print(pred.predict(test_mail_spam))
+print("******************************")
+print(pred.predict(test_mail_valid))
