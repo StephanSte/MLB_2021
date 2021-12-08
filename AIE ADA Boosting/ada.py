@@ -1,39 +1,33 @@
-# evaluate adaboost algorithm for classification
-from numpy import mean
-from numpy import std
-from sklearn.datasets import make_classification
-from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier, ExtraTreesClassifier
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
+import pandas as pd
+import numpy as np
+from MyAdaBoost import MyAdaBoost
 
-# define dataset
-X, y = make_classification(n_samples=1000, n_features=20, n_informative=15, n_redundant=5, random_state=6)
-# define the model
-model = AdaBoostClassifier()
-# evaluate the model
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-n_scores = cross_val_score(model, X, y, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
-# Running the example reports the mean and standard deviation accuracy of the model.
-print('Accuracy ADA Boosting: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+if __name__ == '__main__':
+    X, y = load_wine(return_X_y=True)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=42)
 
+    classifiers = {}
+    clfTree = DecisionTreeClassifier()
+    clfTree.fit(X_train, y_train)
+    classifiers['clfTree'] = clfTree
+    clfForest = RandomForestClassifier()
+    clfForest.fit(X_test, y_test)
+    classifiers['clfForest'] = clfForest
+    myAdaBoost = MyAdaBoost(n_stumps=10)
+    myAdaBoost.fit(X_train, y_train)
+    classifiers['myAdaBoost'] = myAdaBoost
 
-# define dataset
-X, y = make_classification(n_samples=1000, n_features=20, n_informative=15, n_redundant=5, random_state=3)
-# define the model
-model = RandomForestClassifier()
-# evaluate the model
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-n_scores = cross_val_score(model, X, y, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
-# report performance
-print('Accuracy Random Forest: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+    for key in classifiers.keys():
+        correct = 0
+        for _x, _y in zip(X_test, y_test):
+            if key != 'myAdaBoost':
+                _x = _x.reshape(1, -1)
+            if classifiers[key].predict(_x) == _y:
+                correct += 1
+        accuracy = correct / X_test.shape[0]
 
-
-# define dataset
-X, y = make_classification(n_samples=1000, n_features=20, n_informative=15, n_redundant=5, random_state=4)
-# define the model
-model = ExtraTreesClassifier()
-# evaluate the model
-cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
-n_scores = cross_val_score(model, X, y, scoring='accuracy', cv=cv, n_jobs=-1, error_score='raise')
-# report performance
-print('Accuracy Extra Trees: %.3f (%.3f)' % (mean(n_scores), std(n_scores)))
+        print(key + ', accuracy: ' + str(accuracy))
