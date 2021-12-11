@@ -2,8 +2,6 @@ from sklearn.datasets import load_wine
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.tree import DecisionTreeClassifier
-import pandas as pd
-import numpy as np
 from MyAdaBoost import MyAdaBoost
 
 if __name__ == '__main__':
